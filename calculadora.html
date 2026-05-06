@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora — Kallê Monteiro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue-deep: #020b18;
+      --blue-mid: #041429;
+      --blue-1: #0a2a4a;
+      --blue-2: #1565c0;
+      --blue-3: #1e88e5;
+      --blue-4: #42a5f5;
+      --cyan: #00e5ff;
+      --white: #e8f4fd;
+      --muted: #5b8db8;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--blue-deep);
+      font-family: 'JetBrains Mono', monospace;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ── ANIMATED BACKGROUND ── */
+    .bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+    }
+
+    /* Grid lines */
+    .bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: gridDrift 20s linear infinite;
+    }
+
+    @keyframes gridDrift {
+      from { transform: translate(0, 0); }
+      to   { transform: translate(40px, 40px); }
+    }
+
+    /* Radial glow */
+    .bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 50%, rgba(21,101,192,0.25) 0%, transparent 70%),
+        radial-gradient(ellipse 30% 30% at 20% 20%, rgba(0,229,255,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 80% 80%, rgba(30,136,229,0.1) 0%, transparent 60%);
+    }
+
+    /* Floating orbs */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+      animation: orbFloat ease-in-out infinite alternate;
+    }
+    .orb-1 { width: 350px; height: 350px; background: rgba(21,101,192,0.18); top: -80px; left: -80px; animation-duration: 14s; }
+    .orb-2 { width: 280px; height: 280px; background: rgba(0,229,255,0.1); bottom: -60px; right: -60px; animation-duration: 10s; animation-delay: -5s; }
+    .orb-3 { width: 200px; height: 200px; background: rgba(66,165,245,0.12); top: 50%; left: 50%; animation-duration: 18s; animation-delay: -8s; }
+
+    @keyframes orbFloat {
+      from { transform: translate(0,0) scale(1); }
+      to   { transform: translate(30px,20px) scale(1.08); }
+    }
+
+    /* Particles */
+    .particles {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .particle {
+      position: absolute;
+      width: 2px; height: 2px;
+      background: var(--cyan);
+      border-radius: 50%;
+      opacity: 0;
+      animation: particleFly linear infinite;
+    }
+
+    @keyframes particleFly {
+      0%   { opacity: 0; transform: translateY(100vh) scale(0); }
+      10%  { opacity: 0.6; }
+      90%  { opacity: 0.3; }
+      100% { opacity: 0; transform: translateY(-10vh) scale(1); }
+    }
+
+    /* ── BACK LINK ── */
+    .back {
+      position: fixed;
+      top: 1.5rem; left: 1.5rem;
+      z-index: 10;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: color 0.2s;
+    }
+    .back:hover { color: var(--cyan); }
+
+    /* ── CALC WRAPPER ── */
+    .calc-container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .calc-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      opacity: 0.7;
+    }
+
+    /* ── CALCULATOR ── */
+    .calc {
+      background: rgba(4,20,41,0.85);
+      border: 1px solid rgba(0,229,255,0.15);
+      border-radius: 16px;
+      padding: 1.5rem;
+      width: 320px;
+      box-shadow:
+        0 0 0 1px rgba(0,229,255,0.05),
+        0 20px 60px rgba(0,0,0,0.6),
+        0 0 80px rgba(21,101,192,0.15),
+        inset 0 1px 0 rgba(0,229,255,0.08);
+      backdrop-filter: blur(20px);
+      animation: calcIn 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+
+    @keyframes calcIn {
+      from { opacity: 0; transform: translateY(30px) scale(0.95); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* ── DISPLAY ── */
+    .display {
+      background: rgba(2,11,24,0.8);
+      border: 1px solid rgba(0,229,255,0.1);
+      border-radius: 8px;
+      padding: 1.2rem 1.2rem 0.8rem;
+      margin-bottom: 1.2rem;
+      text-align: right;
+      min-height: 90px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .display::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--cyan), transparent);
+      opacity: 0.3;
+    }
+
+    .display-expr {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+      min-height: 1em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .display-main {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: -0.02em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      transition: color 0.15s;
+    }
+
+    .display-main.flash { color: var(--cyan); }
+
+    /* ── BUTTONS ── */
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.6rem;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 1rem 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem;
+      font-weight: 400;
+      cursor: pointer;
+      transition: all 0.12s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.08);
+      opacity: 0;
+      transition: opacity 0.1s;
+    }
+
+    .btn:hover::after { opacity: 1; }
+    .btn:active { transform: scale(0.94); }
+
+    /* Number buttons */
+    .btn-num {
+      background: rgba(10,42,74,0.7);
+      color: var(--white);
+      border: 1px solid rgba(0,229,255,0.08);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .btn-num:hover { background: rgba(21,101,192,0.4); border-color: rgba(0,229,255,0.2); }
+
+    /* Operator buttons */
+    .btn-op {
+      background: rgba(21,101,192,0.3);
+      color: var(--cyan);
+      border: 1px solid rgba(0,229,255,0.2);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .btn-op:hover { background: rgba(21,101,192,0.5); box-shadow: 0 0 16px rgba(0,229,255,0.15); }
+
+    /* Clear button */
+    .btn-clear {
+      background: rgba(239,68,68,0.12);
+      color: #f87171;
+      border: 1px solid rgba(239,68,68,0.2);
+    }
+    .btn-clear:hover { background: rgba(239,68,68,0.25); }
+
+    /* Equals button */
+    .btn-eq {
+      background: linear-gradient(135deg, var(--blue-2), var(--blue-3));
+      color: #fff;
+      border: 1px solid rgba(0,229,255,0.3);
+      box-shadow: 0 4px 20px rgba(21,101,192,0.4);
+      font-size: 1.2rem;
+    }
+    .btn-eq:hover { box-shadow: 0 4px 30px rgba(0,229,255,0.3); background: linear-gradient(135deg, var(--blue-3), var(--cyan)); color: var(--blue-deep); }
+
+    /* Zero spans 2 cols */
+    .span2 { grid-column: span 2; }
+  </style>
+</head>
+<body>
+
+  <div class="bg"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- Particles -->
+  <div class="particles" id="particles"></div>
+
+  <a href="index (1).html" class="back">← voltar ao portfólio</a>
+
+  <div class="calc-container">
+    <div class="calc-label">// calculadora.js</div>
+
+    <div class="calc">
+      <div class="display">
+        <div class="display-expr" id="expr"></div>
+        <div class="display-main" id="display">0</div>
+      </div>
+
+      <div class="buttons">
+        <!-- Row 1 -->
+        <button class="btn btn-clear" onclick="clearAll()">AC</button>
+        <button class="btn btn-op"    onclick="toggleSign()">+/−</button>
+        <button class="btn btn-op"    onclick="percent()">%</button>
+        <button class="btn btn-op"    onclick="setOp('/')">÷</button>
+
+        <!-- Row 2 -->
+        <button class="btn btn-num" onclick="input('7')">7</button>
+        <button class="btn btn-num" onclick="input('8')">8</button>
+        <button class="btn btn-num" onclick="input('9')">9</button>
+        <button class="btn btn-op"  onclick="setOp('*')">×</button>
+
+        <!-- Row 3 -->
+        <button class="btn btn-num" onclick="input('4')">4</button>
+        <button class="btn btn-num" onclick="input('5')">5</button>
+        <button class="btn btn-num" onclick="input('6')">6</button>
+        <button class="btn btn-op"  onclick="setOp('-')">−</button>
+
+        <!-- Row 4 -->
+        <button class="btn btn-num" onclick="input('1')">1</button>
+        <button class="btn btn-num" onclick="input('2')">2</button>
+        <button class="btn btn-num" onclick="input('3')">3</button>
+        <button class="btn btn-op"  onclick="setOp('+')">+</button>
+
+        <!-- Row 5 -->
+        <button class="btn btn-num span2" onclick="input('0')">0</button>
+        <button class="btn btn-num"       onclick="inputDot()">.</button>
+        <button class="btn btn-eq"        onclick="calculate()">=</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── Particles ──
+    const pc = document.getElementById('particles');
+    for (let i = 0; i < 25; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random() * 100 + 'vw';
+      p.style.animationDuration = (6 + Math.random() * 10) + 's';
+      p.style.animationDelay = (-Math.random() * 15) + 's';
+      p.style.width = p.style.height = (Math.random() > 0.5 ? 2 : 3) + 'px';
+      p.style.opacity = Math.random() * 0.5;
+      pc.appendChild(p);
+    }
+
+    // ── Calculator Logic ──
+    let current = '0';
+    let prev = null;
+    let op = null;
+    let fresh = false;
+
+    const disp = document.getElementById('display');
+    const expr = document.getElementById('expr');
+
+    function update(val) {
+      disp.textContent = val;
+      disp.classList.add('flash');
+      setTimeout(() => disp.classList.remove('flash'), 150);
+    }
+
+    function input(ch) {
+      if (fresh) { current = ch; fresh = false; }
+      else {
+        if (current === '0' && ch !== '.') current = ch;
+        else if (current.length < 12) current += ch;
+      }
+      update(current);
+    }
+
+    function inputDot() {
+      if (fresh) { current = '0.'; fresh = false; }
+      else if (!current.includes('.')) current += '.';
+      update(current);
+    }
+
+    function setOp(o) {
+      if (op && !fresh) calculate(true);
+      prev = parseFloat(current);
+      op = o;
+      fresh = true;
+      const sym = { '+': '+', '-': '−', '*': '×', '/': '÷' }[o];
+      expr.textContent = prev + ' ' + sym;
+    }
+
+    function calculate(intermediate = false) {
+      if (op === null || prev === null) return;
+      const cur = parseFloat(current);
+      let result;
+      switch (op) {
+        case '+': result = prev + cur; break;
+        case '-': result = prev - cur; break;
+        case '*': result = prev * cur; break;
+        case '/': result = cur === 0 ? 'Erro' : prev / cur; break;
+      }
+      if (!intermediate) {
+        const sym = { '+': '+', '-': '−', '*': '×', '/': '÷' }[op];
+        expr.textContent = prev + ' ' + sym + ' ' + cur + ' =';
+        op = null;
+        prev = null;
+      }
+      const str = typeof result === 'number'
+        ? (Number.isInteger(result) ? result.toString() : parseFloat(result.toFixed(10)).toString())
+        : result;
+      current = str;
+      update(str);
+      fresh = !intermediate;
+    }
+
+    function clearAll() {
+      current = '0'; prev = null; op = null; fresh = false;
+      expr.textContent = '';
+      update('0');
+    }
+
+    function toggleSign() {
+      if (current === '0') return;
+      current = current.startsWith('-') ? current.slice(1) : '-' + current;
+      update(current);
+    }
+
+    function percent() {
+      current = String(parseFloat(current) / 100);
+      update(current);
+    }
+
+    // Keyboard support
+    document.addEventListener('keydown', e => {
+      if (e.key >= '0' && e.key <= '9') input(e.key);
+      else if (e.key === '.') inputDot();
+      else if (e.key === '+') setOp('+');
+      else if (e.key === '-') setOp('-');
+      else if (e.key === '*') setOp('*');
+      else if (e.key === '/') { e.preventDefault(); setOp('/'); }
+      else if (e.key === 'Enter' || e.key === '=') calculate();
+      else if (e.key === 'Escape') clearAll();
+      else if (e.key === 'Backspace') {
+        if (current.length > 1) current = current.slice(0, -1);
+        else current = '0';
+        update(current);
+      }
+    });
+  </script>
+</body>
+</html>
