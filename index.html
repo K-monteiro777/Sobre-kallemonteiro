@@ -53,7 +53,6 @@
       to   { transform: translate(40px, 30px) scale(1.05); }
     }
 
-    /* ── NAV ── */
     nav {
       position: fixed;
       top: 0; left: 0; right: 0;
@@ -86,7 +85,6 @@
     }
     .nav-links a:hover { color: var(--accent); }
 
-    /* ── HERO ── */
     .hero {
       position: relative;
       z-index: 1;
@@ -240,7 +238,6 @@
       50% { width: 70px; }
     }
 
-    /* ── SECTIONS ── */
     section {
       position: relative;
       z-index: 1;
@@ -274,7 +271,6 @@
       opacity: 0.3;
     }
 
-    /* ── SKILLS ── */
     .skills-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -320,7 +316,6 @@
       letter-spacing: 0.08em;
     }
 
-    /* ── CODE WINDOW ── */
     .code-window {
       background: #0a0f14;
       border: 1px solid var(--border);
@@ -357,7 +352,6 @@
     .code-body .cm  { color: #475569; font-style: italic; }
     .code-body .num { color: #f97316; }
 
-    /* ── PROJECTS ── */
     .projects-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -411,7 +405,6 @@
 
     .project-card:hover .project-link { opacity: 1; }
 
-    /* ── FOOTER ── */
     footer {
       position: relative;
       z-index: 1;
@@ -424,7 +417,6 @@
 
     footer span { color: var(--accent); }
 
-    /* ── ANIMATIONS ── */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(20px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -449,7 +441,6 @@
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
 
-  <!-- NAV -->
   <nav>
     <div class="nav-logo">KM_</div>
     <ul class="nav-links">
@@ -458,7 +449,6 @@
     </ul>
   </nav>
 
-  <!-- HERO -->
   <div class="hero">
     <div class="hero-tag">disponível para projetos</div>
     <h1>
@@ -481,7 +471,6 @@
     </div>
   </div>
 
-  <!-- SKILLS -->
   <section id="skills">
     <div class="section-label">// habilidades</div>
     <h2 class="section-title reveal">O que eu sei fazer</h2>
@@ -556,7 +545,6 @@
     </div>
   </section>
 
-  <!-- PROJECTS -->
   <section id="projects">
     <div class="section-label">// projetos</div>
     <h2 class="section-title reveal">O que já construí</h2>
@@ -573,8 +561,18 @@
         </div>
       </a>
 
-      <div class="project-card reveal" style="cursor:default;">
+      <a href="https://k-monteiro777.github.io/flowday/" target="_blank" class="project-card reveal">
         <div class="project-num">002</div>
+        <div class="project-title">FlowDay</div>
+        <div class="project-desc">App de organização de rotinas com tarefas, notas, hidratação e calendário. Banco de dados real com login por usuário via Supabase.</div>
+        <div class="project-footer">
+          <span class="project-status">● online</span>
+          <span class="project-link">abrir →</span>
+        </div>
+      </a>
+
+      <div class="project-card reveal" style="cursor:default;">
+        <div class="project-num">003</div>
         <div class="project-title">Projetos em Breve</div>
         <div class="project-desc">Novos projetos estão a caminho. Fique ligado nas atualizações deste portfólio.</div>
         <div class="project-footer">
@@ -584,7 +582,6 @@
     </div>
   </section>
 
-  <!-- FOOTER -->
   <footer>
     <p>Feito com <span>♥</span> por <span>Kallê Monteiro</span> &nbsp;·&nbsp; Cascavel, CE &nbsp;·&nbsp; <span>2025</span></p>
   </footer>
